@@ -1,0 +1,41 @@
+version: '3'
+services:
+  drill:
+    image: apache/drill:1.18.0
+    ports:
+      - "8047:8047"
+    # command: /bin/bash
+    tty: true
+    volumes:
+        - "./data:/Data"
+  redis:
+    image: redis
+    restart: always
+    volumes:
+      - redis:/data
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: superset
+      POSTGRES_PASSWORD: superset
+      POSTGRES_USER: superset
+    volumes:
+      - postgres:/var/lib/postgresql/data
+  superset:
+    build: ./superset
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+      - drill
+    environment:
+      # MAPBOXのAPIキーを取得して以下に入れて下さい
+      MAPBOX_API_KEY: ${MAPBOX_API_KEY}
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./superset_config.py:/etc/superset/superset_config.py
+volumes:
+  postgres:
+  redis:
